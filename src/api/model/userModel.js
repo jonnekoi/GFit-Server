@@ -1,5 +1,31 @@
-const postRegisterUser = async (req, res) => {
+import promisePool from "../../utils/database.js";
 
-}
+const postRegisterUser = async (user) => {
+    try {
+        const {name, username, password, role} = user;
+        const sql = `INSERT INTO users (name, username, password, role) VALUES (?, ?, ?, ?)`;
+        const params = [name, username, password, role];
+        const [result] = await promisePool.execute(sql, params);
+        return {user_id: result.insertId};
+    } catch (error) {
+        console.log(error);
+    }
+};
 
-export {postRegisterUser};
+const isUsernameAvailable = async (username) => {
+    const [response] = await promisePool.query(
+        "SELECT * FROM users WHERE username = ?",
+        [username],
+    );
+    return response.length === 0;
+};
+
+const getUserByUsername = async (user) => {
+    const sql = "SELECT * FROM users WHERE username = ?";
+    const [rows] = await promisePool.execute(sql, [user]);
+    if (rows.length === 0) return false;
+    return rows[0];
+};
+
+export {postRegisterUser, isUsernameAvailable, getUserByUsername};
+

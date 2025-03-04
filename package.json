@@ -1,0 +1,18 @@
+{
+  "name": "gfit-server",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/index.js"
+  },
+  "private": true,
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.21.1",
+    "mysql2": "^3.12.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}

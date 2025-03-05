@@ -13,7 +13,8 @@ const fetchAllWorkouts = async () => {
             e.description AS exercise_description,
             we.low_reps,
             we.max_reps,
-            we.weight
+            we.weight,
+            we.sets
         FROM
             workouts w
         JOIN
@@ -25,7 +26,7 @@ const fetchAllWorkouts = async () => {
     const formattedWorkouts = {};
 
     workouts.forEach(workout => {
-        const { workout_id, workout_name, workout_description, workout_created_at, workout_type, exercise_id, exercise_name, exercise_description, low_reps, max_reps, weight } = workout;
+        const { workout_id, workout_name, workout_description, workout_created_at, workout_type, exercise_id, exercise_name, exercise_description, low_reps, max_reps, weight, sets } = workout;
 
         if (!formattedWorkouts[workout_name]) {
             formattedWorkouts[workout_name] = {
@@ -43,7 +44,8 @@ const fetchAllWorkouts = async () => {
             exercise_description,
             low_reps,
             max_reps,
-            weight
+            weight,
+            sets
         });
     });
 
@@ -81,8 +83,8 @@ const postWorkout = async (workout) => {
         const workout_id = result.insertId;
 
         const exercisePromises = exercises.map(exercise => {
-            const {id, reps_low, reps_max, weight, description, duration} = exercise;
-            const exerciseSql = `INSERT INTO workout_exercises (workout_id, exercise_id, low_reps, weight, duration, max_reps, descrip) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            const {id, reps_low, reps_max, weight, description, duration, sets} = exercise;
+            const exerciseSql = `INSERT INTO workout_exercises (workout_id, exercise_id, low_reps, weight, duration, max_reps, descrip, sets) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
             const exerciseParams = [
                 workout_id,
                 id !== undefined ? id : null,
@@ -90,7 +92,8 @@ const postWorkout = async (workout) => {
                 weight !== undefined ? weight : null,
                 duration !== undefined ? duration : null,
                 reps_max !== undefined ? reps_max : null,
-                description !== undefined ? description : null
+                description !== undefined ? description : null,
+                sets !== undefined ? sets : null
             ];
             return promisePool.execute(exerciseSql, exerciseParams);
         });

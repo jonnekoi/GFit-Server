@@ -1,4 +1,4 @@
-import {fetchAllWorkouts, postExercise, fetchAllExercises} from "../model/workoutModel.js";
+import {fetchAllWorkouts, postExercise, fetchAllExercises, postWorkout} from "../model/workoutModel.js";
 
 const getAllWorkouts = async (req, res) => {
     try {
@@ -32,4 +32,20 @@ const getAllExercises = async (req, res) => {
     }
 }
 
-export {getAllWorkouts, addExercise, getAllExercises};
+const addNewWorkout = async (req, res) => {
+    try {
+        console.log("TÄSSÄ ADD NEW BODY", req.body);
+        const result = await postWorkout(req.body);
+        console.log(result);
+        if (result) {
+            res.status(201).json({message: "Workout added!"});
+        } else {
+            res.status(400).json({message: "Failed to add workout"});
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: "Internal server error"});
+    }
+}
+
+export {getAllWorkouts, addExercise, getAllExercises, addNewWorkout};

@@ -8,6 +8,7 @@ const fetchAllWorkouts = async () => {
             w.description AS workout_description,
             w.created_at AS workout_created_at,
             w.type AS workout_type,
+            w.level AS workout_level,
             e.id AS exercise_id,
             e.name AS exercise_name,
             e.description AS exercise_description,
@@ -26,7 +27,7 @@ const fetchAllWorkouts = async () => {
     const formattedWorkouts = {};
 
     workouts.forEach(workout => {
-        const { workout_id, workout_name, workout_description, workout_created_at, workout_type, exercise_id, exercise_name, exercise_description, low_reps, max_reps, weight, sets } = workout;
+        const { workout_id, workout_name, workout_description, workout_created_at, workout_type, workout_level, exercise_id, exercise_name, exercise_description, low_reps, max_reps, weight, sets } = workout;
 
         if (!formattedWorkouts[workout_name]) {
             formattedWorkouts[workout_name] = {
@@ -34,6 +35,7 @@ const fetchAllWorkouts = async () => {
                 workout_description,
                 workout_created_at,
                 workout_type,
+                workout_level,
                 exercises: []
             };
         }
@@ -74,11 +76,12 @@ const postWorkout = async (workout) => {
     try {
         const workoutName = workout.workoutName !== undefined ? workout.workoutName : null;
         const workoutType = workout.workoutType !== undefined ? workout.workoutType : null;
+        const level = workout.level !== undefined ? workout.level : null;
         const {exercises} = workout;
         const description = workout.description !== undefined ? workout.description : null;
         const created_at = new Date();
-        const sql = `INSERT INTO workouts (name, description, created_at, type) VALUES (?, ?, ?, ?)`;
-        const params = [workoutName, description, created_at, workoutType];
+        const sql = `INSERT INTO workouts (name, description, created_at, type, level) VALUES (?, ?, ?, ?, ?)`;
+        const params = [workoutName, description, created_at, workoutType, level];
         const [result] = await promisePool.execute(sql, params);
         const workout_id = result.insertId;
 
@@ -105,4 +108,28 @@ const postWorkout = async (workout) => {
     }
 }
 
-export {fetchAllWorkouts, postExercise, fetchAllExercises, postWorkout};
+const putUpdateWorkout = async (workout) => {
+    const workout_id = workout.id;
+    const exercises = workout.exercises;
+
+    const updatePromises = exercises.map(exercise => {
+        const { exercise_id, low_reps, max_reps, weight, sets } = exercise;
+        const updateWorkoutSql = `
+            UPDATE workout_exercises 
+            SET low_reps = ?, max_reps = ?, weight = ?, sets = ? 
+            WHERE workout_id = ? AND exercise_id = ?
+        `;
+        const params = [low_reps, max_reps, weight, sets, workout_id, exercise_id];
+        return promisePool.execute(updateWorkoutSql, params);
+    });
+
+    try {
+        await Promise.all(updatePromises);
+        return { message: "Workout updated successfully" };
+    } catch (error) {
+        console.log(error);
+        throw new Error("Failed to update workout");
+    }
+}
+
+export {fetchAllWorkouts, postExercise, fetchAllExercises, postWorkout, putUpdateWorkout};

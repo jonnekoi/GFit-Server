@@ -2,11 +2,11 @@ import promisePool from "../../utils/database.js";
 
 const postNewClient = async (client) => {
     try {
-       const {FirstName, LastName, plan, birthday, clientRegisterCode, status, email, address, city, postalCode} = client;
-       const sql = `INSERT INTO clients (FirstName, LastName, plan, birthday, clientRegisterCode, status, email, address, city, postalCode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-       const params = [FirstName, LastName, plan, birthday, clientRegisterCode, status, email, address, city, postalCode];
-       await promisePool.execute(sql, params);
-       return {clientRegisterCode};
+       const {FirstName, LastName, plan, birthday, clientRegisterCode, status, email, address, city, postalCode, memberSince} = client;
+       const sql = `INSERT INTO clients (FirstName, LastName, plan, birthday, clientRegisterCode, status, email, address, city, postalCode, memberSince) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+       const params = [FirstName, LastName, plan, birthday, clientRegisterCode, status, email, address, city, postalCode, memberSince];
+       const [result] = await promisePool.execute(sql, params);
+       return result;
     } catch (error) {
         console.log(error);
     }
@@ -58,6 +58,7 @@ const fetchClientData = async (id) => {
             email: rows[0].email,
             address: rows[0].address,
             city: rows[0].city,
+            memberSince: rows[0].memberSince,
             postalCode: rows[0].postalCode,
             plan_name: rows[0].plan_name,
             workouts: {}
@@ -95,4 +96,14 @@ const fetchClientData = async (id) => {
     }
 }
 
-export { postNewClient, fetchAllClients, fetchClientData };
+const fetchClientWeights = async (id) => {
+    try {
+        const sql = `SELECT * FROM clientWeight WHERE userId = ?`;
+        const [weights] = await promisePool.execute(sql, [id]);
+        return weights;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export { postNewClient, fetchAllClients, fetchClientData, fetchClientWeights };

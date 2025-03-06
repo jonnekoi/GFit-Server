@@ -1,10 +1,12 @@
-import {fetchAllClients, postNewClient, fetchClientData} from "../model/clientModel.js";
+import {fetchAllClients, postNewClient, fetchClientData, fetchClientWeights} from "../model/clientModel.js";
 
 const addNewClient = async (req, res) => {
     try {
         const code = generateRandomCode(8);
 
         const status = "Pending";
+
+        const date = new Date();
 
         const client = {
             FirstName: req.body.firstName,
@@ -18,12 +20,17 @@ const addNewClient = async (req, res) => {
             email: req.body.email,
             address: req.body.address,
             city: req.body.city,
-            postalCode: req.body.postalCode
+            postalCode: req.body.postalCode,
+            memberSince: date
         }
 
         const saveClient = await postNewClient(client);
-        res.status(201).json({message: "client added", saveClient});
+        if (saveClient.affectedRows === 1) {
+            return res.status(201).json({message: "Client added", clientRegisterCode: client.clientRegisterCode});
+        }
+        res.status(401).json({message: "Client not added"});
     } catch (error) {
+        res.status(500).json({message: "Internal server error"});
         console.log(error);
     }
 }
@@ -56,5 +63,14 @@ const getClientData = async (req, res) => {
     }
 }
 
+const getClientWeights = async (req, res) => {
+    try {
+        const weights = await fetchClientWeights(req.params.id);
+        res.status(200).json(weights);
+    } catch (error) {
+        console.log(error);
+    }
+}
 
-export { addNewClient, getAllClients, getClientData };
+
+export { addNewClient, getAllClients, getClientData, getClientWeights };

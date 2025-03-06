@@ -1,4 +1,4 @@
-import {fetchAllClients, postNewClient} from "../model/clientModel.js";
+import {fetchAllClients, postNewClient, fetchClientData} from "../model/clientModel.js";
 
 const addNewClient = async (req, res) => {
     try {
@@ -47,5 +47,14 @@ const generateRandomCode = (length) => {
     return result;
 }
 
+const getClientData = async (req, res) => {
+    try {
+        const client = await fetchClientData(req.params.id);
+        res.status(200).json(client);
+    } catch (error) {
+        console.log(error);
+    }
+}
 
-export { addNewClient, getAllClients };
+
+export { addNewClient, getAllClients, getClientData };

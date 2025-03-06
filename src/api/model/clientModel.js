@@ -14,7 +14,12 @@ const postNewClient = async (client) => {
 
 const fetchAllClients = async () => {
     try {
-        const [clients] = await promisePool.execute("SELECT * FROM clients");
+        const sql = `
+            SELECT c.*, cp.plan_name AS plan_name
+            FROM clients c
+            JOIN clientsPlans cp ON c.plan = cp.id
+        `;
+        const [clients] = await promisePool.execute(sql);
         return clients;
     } catch (error) {
         console.log(error);

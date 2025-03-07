@@ -94,8 +94,6 @@ const fetchClientData = async (id) => {
             }
         });
 
-        console.log(client);
-
         return client;
     } catch (error) {
         console.log(error);

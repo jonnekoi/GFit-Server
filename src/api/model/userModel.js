@@ -26,6 +26,15 @@ const getUserByUsername = async (user) => {
     if (rows.length === 0) return false;
     return rows[0];
 };
+const saveProfilePicturePath = async (clientId, filePath) => {
+    try {
+        const sql = `UPDATE clients SET profilePicture = ? WHERE id = ?`;
+        await promisePool.execute(sql, [filePath, clientId]);
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
 
-export {postRegisterUser, isUsernameAvailable, getUserByUsername};
+export {postRegisterUser, isUsernameAvailable, getUserByUsername, saveProfilePicturePath};
 

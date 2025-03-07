@@ -6,6 +6,7 @@ import clientRouter from "./routes/clientRouter.js";
 
 const router = express.Router();
 
+
 router.use("/users", userRouter);
 router.use("/workouts", workoutRouter);
 router.use("/clients", clientRouter);

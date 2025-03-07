@@ -2,9 +2,10 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import {
   postRegisterUser,
-  isUsernameAvailable, getUserByUsername
+  isUsernameAvailable, getUserByUsername, saveProfilePicturePath
 } from '../model/userModel.js';
-
+import path from 'path';
+import fs from 'fs';
 
 const registerUser = async (req, res) => {
   try {
@@ -48,7 +49,39 @@ const loginUser = async (req, res) => {
   res.status(200).json({ user: user, token });
 };
 
+const uploadProfilePicture = async (req, res) => {
+  try {
+    const { file } = req;
+    if (!file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const clientId = req.body.clientId;
+    const fileExtension = path.extname(file.originalname);
+    file.filename = `${clientId}-profile${fileExtension}`;
+    const filePath = path.join('uploads', file.filename);
+
+    await saveProfilePicturePath(clientId, filePath);
+
+    res.status(200).json({ message: 'Profile picture uploaded successfully', filePath });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+    console.log(error);
+  }
+}
+
+const getProfilePicture = (req, res) => {
+  const { filename } = req.params;
+  let filePath = path.join('uploads', filename);
+
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      filePath = path.join('uploads', 'defaultPicture.jpg');
+    }
+    res.sendFile(path.resolve(filePath));
+  });
+}
 
 
 
-export {registerUser, loginUser};
+export {registerUser, loginUser, uploadProfilePicture, getProfilePicture};

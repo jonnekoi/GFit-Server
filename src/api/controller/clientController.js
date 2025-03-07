@@ -36,11 +36,13 @@ const addNewClient = async (req, res) => {
 }
 
 const getAllClients = async (req, res) => {
+    const { type } = req.query;
     try {
-        const clients = await fetchAllClients();
+        const clients = await fetchAllClients(type);
         res.status(200).json(clients);
     } catch (error) {
         console.log(error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 }
 

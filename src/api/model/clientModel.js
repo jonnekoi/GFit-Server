@@ -12,17 +12,21 @@ const postNewClient = async (client) => {
     }
 }
 
-const fetchAllClients = async () => {
+const fetchAllClients = async (type) => {
     try {
-        const sql = `
+        let sql = `
             SELECT c.*, cp.plan_name AS plan_name
             FROM clients c
             JOIN clientsPlans cp ON c.plan = cp.id
         `;
+        if (type === 'pending') {
+            sql += ` WHERE c.status = 'pending'`;
+        }
         const [clients] = await promisePool.execute(sql);
         return clients;
     } catch (error) {
         console.log(error);
+        throw error;
     }
 }
 

@@ -29,7 +29,7 @@ const fetchAllClients = async () => {
 const fetchClientData = async (id) => {
     try {
         const sql = `
-            SELECT c.*, cp.plan_name, w.id AS workout_id, w.name AS workout_name, w.description AS workout_description, w.type AS workout_type, w.level AS workout_level,
+            SELECT c.*, c.weight AS client_weight, cp.plan_name, w.id AS workout_id, w.name AS workout_name, w.description AS workout_description, w.type AS workout_type, w.level AS workout_level,
                    e.id AS exercise_id, e.name AS exercise_name, we.low_reps, we.weight, we.duration, we.max_reps, we.descrip, we.sets
             FROM clients c
             JOIN clientsPlans cp ON c.plan = cp.id
@@ -51,7 +51,7 @@ const fetchClientData = async (id) => {
             LastName: rows[0].LastName,
             plan: rows[0].plan,
             birthday: rows[0].birthday,
-            weight: rows[0].weight,
+            weight: rows[0].client_weight,
             targetWeight: rows[0].targetWeight,
             clientRegisterCode: rows[0].clientRegisterCode,
             status: rows[0].status,
@@ -89,6 +89,8 @@ const fetchClientData = async (id) => {
                 }
             }
         });
+
+        console.log(client);
 
         return client;
     } catch (error) {

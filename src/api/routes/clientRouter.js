@@ -1,5 +1,15 @@
 import express  from 'express';
 import {addNewClient, getAllClients, getClientData, getClientWeights} from "../controller/clientController.js";
+import authToken from "../../utils/middlewares.js";
+
+const isCoach = (req, res, next) => {
+    if (res.locals.user && res.locals.user.role === 'coach') {
+        next();
+    } else {
+        res.status(403).json({ message: 'Access denied' });
+    }
+};
+
 
 const clientRouter = express.Router();
 

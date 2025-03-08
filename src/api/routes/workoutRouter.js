@@ -1,6 +1,17 @@
 import express  from 'express';
 
 import {getAllWorkouts, addExercise, getAllExercises, addNewWorkout, updateWorkout} from '../controller/workoutController.js';
+import authToken from "../../utils/middlewares.js";
+
+
+const isCoach = (req, res, next) => {
+    if (res.locals.user.role === "coach") {
+        next();
+    } else {
+        console.log("Ollaan täs!")
+        res.status(403).send({ message: "Unauthorized" });
+    }
+}
 
 const workoutRouter = express.Router();
 

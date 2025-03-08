@@ -15,9 +15,9 @@ const isCoach = (req, res, next) => {
 const workoutRouter = express.Router();
 
 workoutRouter.route('/').get(authToken, isCoach, getAllWorkouts).put(updateWorkout);
-workoutRouter.route('/exercise/add').post(addExercise);
-workoutRouter.route('/exercise').get(getAllExercises);
-workoutRouter.route('/add').post(addNewWorkout);
+workoutRouter.route('/exercise/add').post(authToken, isCoach, addExercise);
+workoutRouter.route('/exercise').get(authToken, isCoach, getAllExercises);
+workoutRouter.route('/add').post(authToken, isCoach, addNewWorkout);
 
 
 export default workoutRouter;

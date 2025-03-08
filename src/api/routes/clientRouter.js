@@ -14,8 +14,7 @@ const isCoach = (req, res, next) => {
 const clientRouter = express.Router();
 
 clientRouter.route('/').get(authToken, isCoach, getAllClients);
-clientRouter.route('/add').post(addNewClient);
-clientRouter.route('/:id').get(getClientData);
-clientRouter.route('/weight/:id').get(getClientWeights);
-
+clientRouter.route('/add').post(authToken, isCoach, addNewClient);
+clientRouter.route('/:id').get(authToken, isCoach, getClientData);
+clientRouter.route('/weight/:id').get(authToken, isCoach, getClientWeights);
 export default clientRouter;

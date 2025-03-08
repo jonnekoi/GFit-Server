@@ -10,7 +10,7 @@ const upload = multer({ dest: 'uploads/' });
 userRouter.route('/register').post(registerUser);
 userRouter.route('/login').post(loginUser);
 userRouter.route('/uploadProfilePicture').post(upload.single('profilePicture'), uploadProfilePicture);
-userRouter.route('/profilePicture/:filename').get(getProfilePicture);
+userRouter.route('/profilePicture/:filename').get(authToken, getProfilePicture);
 
 
 

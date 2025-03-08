@@ -8,7 +8,6 @@ const isCoach = (req, res, next) => {
     if (res.locals.user.access === "coach") {
         next();
     } else {
-        console.log("Ollaan täs!")
         res.status(403).send({ message: "Unauthorized" });
     }
 }

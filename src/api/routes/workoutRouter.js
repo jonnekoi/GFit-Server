@@ -5,7 +5,7 @@ import authToken from "../../utils/middlewares.js";
 
 
 const isCoach = (req, res, next) => {
-    if (res.locals.user.role === "coach") {
+    if (res.locals.user.access === "coach") {
         next();
     } else {
         console.log("Ollaan täs!")
@@ -15,7 +15,7 @@ const isCoach = (req, res, next) => {
 
 const workoutRouter = express.Router();
 
-workoutRouter.route('/').get(getAllWorkouts).put(updateWorkout);
+workoutRouter.route('/').get(authToken, isCoach, getAllWorkouts).put(updateWorkout);
 workoutRouter.route('/exercise/add').post(addExercise);
 workoutRouter.route('/exercise').get(getAllExercises);
 workoutRouter.route('/add').post(addNewWorkout);

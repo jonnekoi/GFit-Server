@@ -14,7 +14,7 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'Username already exists' });
     }
     req.body.password = bcrypt.hashSync(req.body.password, 12);
-    req.body.role = 'user';
+    req.body.access = 'user';
     const result = await postRegisterUser(req.body);
     if (!result) {
       return res.status(400).json({ message: 'Failed to register user' });
@@ -81,6 +81,8 @@ const getProfilePicture = (req, res) => {
     res.sendFile(path.resolve(filePath));
   });
 }
+
+
 
 
 

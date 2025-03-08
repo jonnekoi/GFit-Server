@@ -2,9 +2,9 @@ import promisePool from "../../utils/database.js";
 
 const postRegisterUser = async (user) => {
     try {
-        const {name, username, password, role} = user;
-        const sql = `INSERT INTO users (name, username, password, role) VALUES (?, ?, ?, ?)`;
-        const params = [name, username, password, role];
+        const {name, username, password, access} = user;
+        const sql = `INSERT INTO users (name, username, password, access) VALUES (?, ?, ?, ?)`;
+        const params = [name, username, password, access];
         const [result] = await promisePool.execute(sql, params);
         return {user_id: result.insertId};
     } catch (error) {

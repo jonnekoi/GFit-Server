@@ -1,4 +1,4 @@
-import {fetchAllClients, postNewClient, fetchClientData, fetchClientWeights} from "../model/clientModel.js";
+import {fetchAllClients, postNewClient, fetchClientData, fetchClientWeights, sendClientWorkout} from "../model/clientModel.js";
 
 const addNewClient = async (req, res) => {
     try {
@@ -74,5 +74,17 @@ const getClientWeights = async (req, res) => {
     }
 }
 
+const setClientWorkout = async (req, res) => {
+    console.log(req.body);
+    try {
+        const { client_id, workout_id, exercises } = req.body;
+        const workout = await sendClientWorkout({ client_id, workout_id, exercises });
+        res.status(200).json(workout);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: 'An error occurred while setting the client workout.' });
+    }
+}
 
-export { addNewClient, getAllClients, getClientData, getClientWeights };
+
+export { addNewClient, getAllClients, getClientData, getClientWeights, setClientWorkout };

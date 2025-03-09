@@ -34,13 +34,13 @@ const fetchClientData = async (id) => {
     try {
         const sql = `
             SELECT c.*, c.weight AS client_weight, cp.plan_name, w.id AS workout_id, w.name AS workout_name, w.description AS workout_description, w.type AS workout_type, w.level AS workout_level,
-                   e.id AS exercise_id, e.name AS exercise_name, we.low_reps, we.weight, we.duration, we.max_reps, we.descrip, we.sets
+                   e.id AS exercise_id, e.name AS exercise_name, wec.low_reps, wec.weight, wec.duration, wec.max_reps, wec.descrip, wec.sets
             FROM clients c
             JOIN clientsPlans cp ON c.plan = cp.id
             LEFT JOIN clients_workouts cw ON c.id = cw.client_id
             LEFT JOIN workouts w ON cw.workout_id = w.id
-            LEFT JOIN workout_exercises we ON w.id = we.workout_id
-            LEFT JOIN exercises e ON we.exercise_id = e.id
+            LEFT JOIN workout_exercises_client wec ON cw.client_id = wec.client_id AND cw.workout_id = wec.workout_id
+            LEFT JOIN exercises e ON wec.exercise_id = e.id
             WHERE c.id = ?
         `;
         const [rows] = await promisePool.execute(sql, [id]);
@@ -110,4 +110,49 @@ const fetchClientWeights = async (id) => {
     }
 }
 
-export { postNewClient, fetchAllClients, fetchClientData, fetchClientWeights };
+const sendClientWorkout = async (workout) => {
+    try {
+        const { client_id, workout_id, exercises } = workout;
+
+        console.log(workout);
+
+        const clientsWorkoutsSql = `INSERT INTO clients_workouts (client_id, workout_id, day) VALUES (?, ?, ?)`;
+        const clientsWorkoutsParams = [client_id, workout_id, 'Monday'];
+        await promisePool.execute(clientsWorkoutsSql, clientsWorkoutsParams);
+
+        const exercisePromises = exercises.map(exercise => {
+            const { exercise_id, low_reps, max_reps, weight, exercise_description, duration, sets } = exercise;
+            const exerciseSql = `
+                INSERT INTO workout_exercises_client (client_id, workout_id, exercise_id, low_reps, weight, duration, max_reps, descrip, sets)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE
+                    low_reps = VALUES(low_reps),
+                    weight = VALUES(weight),
+                    duration = VALUES(duration),
+                    max_reps = VALUES(max_reps),
+                    descrip = VALUES(descrip),
+                    sets = VALUES(sets)
+            `;
+            const exerciseParams = [
+                client_id,
+                workout_id !== undefined ? workout_id : null,
+                exercise_id !== undefined ? exercise_id : null,
+                low_reps !== undefined ? low_reps : null,
+                weight !== undefined ? weight : null,
+                duration !== undefined ? duration : null,
+                max_reps !== undefined ? max_reps : null,
+                exercise_description !== undefined ? exercise_description : null,
+                sets !== undefined ? sets : null
+            ];
+            return promisePool.execute(exerciseSql, exerciseParams);
+        });
+
+        await Promise.all(exercisePromises);
+        return { workout_id };
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+export { postNewClient, fetchAllClients, fetchClientData, fetchClientWeights, sendClientWorkout };

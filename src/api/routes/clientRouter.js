@@ -1,5 +1,5 @@
 import express  from 'express';
-import {addNewClient, getAllClients, getClientData, getClientWeights} from "../controller/clientController.js";
+import {addNewClient, getAllClients, getClientData, getClientWeights, setClientWorkout} from "../controller/clientController.js";
 import authToken from "../../utils/middlewares.js";
 
 const isCoach = (req, res, next) => {
@@ -17,4 +17,5 @@ clientRouter.route('/').get(authToken, isCoach, getAllClients);
 clientRouter.route('/add').post(authToken, isCoach, addNewClient);
 clientRouter.route('/:id').get(authToken, isCoach, getClientData);
 clientRouter.route('/weight/:id').get(authToken, isCoach, getClientWeights);
+clientRouter.route('/workout/client/add').post(authToken, isCoach, setClientWorkout);
 export default clientRouter;

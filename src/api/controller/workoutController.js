@@ -34,7 +34,6 @@ const getAllExercises = async (req, res) => {
 
 const addNewWorkout = async (req, res) => {
     try {
-        console.log("TÄSSÄ ADD NEW BODY", req.body);
         const result = await postWorkout(req.body);
         console.log(result);
         if (result) {

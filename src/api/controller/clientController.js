@@ -79,7 +79,12 @@ const setClientWorkout = async (req, res) => {
     try {
         const { client_id, workout_id, exercises } = req.body;
         const workout = await sendClientWorkout({ client_id, workout_id, exercises });
-        res.status(200).json(workout);
+
+        if (workout.message === 'Workout already exists. Try editing it instead.') {
+            res.status(409).json(workout);
+        } else {
+            res.status(200).json(workout);
+        }
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'An error occurred while setting the client workout.' });

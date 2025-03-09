@@ -116,22 +116,23 @@ const sendClientWorkout = async (workout) => {
 
         console.log(workout);
 
+        const checkSql = `SELECT * FROM clients_workouts WHERE client_id = ? AND workout_id = ?`;
+        const [rows] = await promisePool.execute(checkSql, [client_id, workout_id]);
+
+        if (rows.length > 0) {
+            return { message: 'Workout already exists. Try editing it instead.' };
+        }
+
         const clientsWorkoutsSql = `INSERT INTO clients_workouts (client_id, workout_id, day) VALUES (?, ?, ?)`;
         const clientsWorkoutsParams = [client_id, workout_id, 'Monday'];
         await promisePool.execute(clientsWorkoutsSql, clientsWorkoutsParams);
 
+        // Insert exercises into workout_exercises_client table
         const exercisePromises = exercises.map(exercise => {
             const { exercise_id, low_reps, max_reps, weight, exercise_description, duration, sets } = exercise;
             const exerciseSql = `
                 INSERT INTO workout_exercises_client (client_id, workout_id, exercise_id, low_reps, weight, duration, max_reps, descrip, sets)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE
-                    low_reps = VALUES(low_reps),
-                    weight = VALUES(weight),
-                    duration = VALUES(duration),
-                    max_reps = VALUES(max_reps),
-                    descrip = VALUES(descrip),
-                    sets = VALUES(sets)
             `;
             const exerciseParams = [
                 client_id,

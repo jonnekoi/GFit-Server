@@ -33,16 +33,16 @@ const fetchAllClients = async (type) => {
 const fetchClientData = async (id) => {
     try {
         const sql = `
-            SELECT c.*, c.weight AS client_weight, cp.plan_name, w.id AS workout_id, w.name AS workout_name, w.description AS workout_description, w.type AS workout_type, w.level AS workout_level,
-                   e.id AS exercise_id, e.name AS exercise_name, wec.low_reps, wec.weight, wec.duration, wec.max_reps, wec.descrip, wec.sets
-            FROM clients c
-            JOIN clientsPlans cp ON c.plan = cp.id
-            LEFT JOIN clients_workouts cw ON c.id = cw.client_id
-            LEFT JOIN workouts w ON cw.workout_id = w.id
-            LEFT JOIN workout_exercises_client wec ON cw.client_id = wec.client_id AND cw.workout_id = wec.workout_id
-            LEFT JOIN exercises e ON wec.exercise_id = e.id
-            WHERE c.id = ?
-        `;
+                SELECT c.*, c.weight AS client_weight, cp.plan_name, cw.day AS workout_day, w.id AS workout_id, w.name AS workout_name, w.description AS workout_description, w.type AS workout_type, w.level AS workout_level,
+                       e.id AS exercise_id, e.name AS exercise_name, wec.low_reps, wec.weight, wec.duration, wec.max_reps, wec.descrip, wec.sets
+                FROM clients c
+                JOIN clientsPlans cp ON c.plan = cp.id
+                LEFT JOIN clients_workouts cw ON c.id = cw.client_id
+                LEFT JOIN workouts w ON cw.workout_id = w.id
+                LEFT JOIN workout_exercises_client wec ON cw.client_id = wec.client_id AND cw.workout_id = wec.workout_id
+                LEFT JOIN exercises e ON wec.exercise_id = e.id
+                WHERE c.id = ?
+            `;
         const [rows] = await promisePool.execute(sql, [id]);
 
         if (rows.length === 0) {
@@ -76,6 +76,7 @@ const fetchClientData = async (id) => {
                         description: row.workout_description,
                         type: row.workout_type,
                         level: row.workout_level,
+                        day: row.workout_day,
                         exercises: []
                     };
                 }
@@ -93,7 +94,6 @@ const fetchClientData = async (id) => {
                 }
             }
         });
-
         return client;
     } catch (error) {
         console.log(error);

@@ -1,4 +1,11 @@
-import {fetchAllClients, postNewClient, fetchClientData, fetchClientWeights, sendClientWorkout} from "../model/clientModel.js";
+import {
+    fetchAllClients,
+    postNewClient,
+    fetchClientData,
+    fetchClientWeights,
+    sendClientWorkout,
+    createNewExercise
+} from "../model/clientModel.js";
 
 const addNewClient = async (req, res) => {
     try {
@@ -75,21 +82,43 @@ const getClientWeights = async (req, res) => {
 }
 
 const setClientWorkout = async (req, res) => {
-    console.log(req.body);
     try {
-        const { client_id, workout_id, exercises } = req.body;
-        const workout = await sendClientWorkout({ client_id, workout_id, exercises });
+        const { client_id, workout_id, exercises, workout_day } = req.body;
 
-        if (workout.message === 'Workout already exists. Try editing it instead.') {
-            res.status(409).json(workout);
-        } else {
-            res.status(200).json(workout);
+        const existingExercises = exercises.filter(exercise => exercise.exercise_id);
+        const newExercises = exercises.filter(exercise => !exercise.exercise_id);
+
+        if (newExercises.length > 0) {
+
+            const createdExercises = await Promise.all(
+                newExercises.map(async (exercise) => {
+                    const name = exercise.exercise_name;
+                    const result = await createNewExercise(name);
+
+                    return {
+                        ...exercise,
+                        exercise_id: result.id
+                    };
+                })
+            );
+
+            const allExercises = [...existingExercises, ...createdExercises];
+
+
+            const workout = await sendClientWorkout({ client_id, workout_id, exercises: allExercises, workout_day });
+
+            if (workout.message === 'Workout already exists. Try editing it instead.') {
+                res.status(409).json(workout);
+            } else {
+                res.status(200).json(workout);
+            }
         }
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'An error occurred while setting the client workout.' });
     }
 }
+
 
 
 export { addNewClient, getAllClients, getClientData, getClientWeights, setClientWorkout };

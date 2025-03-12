@@ -112,9 +112,9 @@ const fetchClientWeights = async (id) => {
 
 const sendClientWorkout = async (workout) => {
     try {
-        const { client_id, workout_id, exercises } = workout;
+        const { client_id, workout_id, exercises, workout_day } = workout;
 
-        console.log(workout);
+        console.log(" ollaan täs",workout);
 
         const checkSql = `SELECT * FROM clients_workouts WHERE client_id = ? AND workout_id = ?`;
         const [rows] = await promisePool.execute(checkSql, [client_id, workout_id]);
@@ -124,10 +124,9 @@ const sendClientWorkout = async (workout) => {
         }
 
         const clientsWorkoutsSql = `INSERT INTO clients_workouts (client_id, workout_id, day) VALUES (?, ?, ?)`;
-        const clientsWorkoutsParams = [client_id, workout_id, 'Monday'];
+        const clientsWorkoutsParams = [client_id, workout_id, workout_day];
         await promisePool.execute(clientsWorkoutsSql, clientsWorkoutsParams);
 
-        // Insert exercises into workout_exercises_client table
         const exercisePromises = exercises.map(exercise => {
             const { exercise_id, low_reps, max_reps, weight, exercise_description, duration, sets } = exercise;
             const exerciseSql = `
@@ -156,4 +155,30 @@ const sendClientWorkout = async (workout) => {
     }
 }
 
-export { postNewClient, fetchAllClients, fetchClientData, fetchClientWeights, sendClientWorkout };
+const createNewExercise = async (name) => {
+    try {
+        const sql = `
+                        INSERT INTO exercises (name, description, created_at, isCustom)
+                        VALUES (?, ?, ?, ?)
+                    `;
+        const description = "Custom exercise";
+        const params = [
+            name,
+            description,
+            new Date(),
+            true
+        ];
+        const [result] = await promisePool.execute(sql, params);
+
+        console.log(result);
+
+        return {
+            id: result.insertId,
+        };
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+export { postNewClient, fetchAllClients, fetchClientData, fetchClientWeights, sendClientWorkout, createNewExercise };

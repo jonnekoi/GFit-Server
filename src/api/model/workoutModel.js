@@ -68,15 +68,16 @@ const postExercise = async (exercise) => {
 }
 
 const fetchAllExercises = async () => {
-    const [exercises] = await promisePool.query(`SELECT id, name, description FROM exercises`);
+    const [exercises] = await promisePool.query(`SELECT id, name, description FROM exercises WHERE isCustom = 0`);
     return exercises;
 }
 
 const postWorkout = async (workout) => {
     try {
-        const workoutName = workout.workoutName !== undefined ? workout.workoutName : null;
-        const workoutType = workout.workoutType !== undefined ? workout.workoutType : null;
-        const level = workout.level !== undefined ? workout.level : null;
+        console.log(workout);
+        const workoutName = workout.workoutName;
+        const workoutType = workout.workoutType;
+        const level = workout.workoutLevel;
         const {exercises} = workout;
         const description = workout.description !== undefined ? workout.description : null;
         const created_at = new Date();

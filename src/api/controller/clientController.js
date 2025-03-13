@@ -4,7 +4,7 @@ import {
     fetchClientData,
     fetchClientWeights,
     sendClientWorkout,
-    createNewExercise, putClientUpdateWorkout
+    createNewExercise, putClientUpdateWorkout, deleteClientWorkoutDb
 } from "../model/clientModel.js";
 
 const addNewClient = async (req, res) => {
@@ -88,8 +88,10 @@ const setClientWorkout = async (req, res) => {
         const existingExercises = exercises.filter(exercise => exercise.exercise_id);
         const newExercises = exercises.filter(exercise => !exercise.exercise_id);
 
-        if (newExercises.length > 0) {
+        console.log("existing", existingExercises);
+        console.log("new", newExercises);
 
+        if (newExercises.length > 0) {
             const createdExercises = await Promise.all(
                 newExercises.map(async (exercise) => {
                     const name = exercise.exercise_name;
@@ -104,8 +106,15 @@ const setClientWorkout = async (req, res) => {
 
             const allExercises = [...existingExercises, ...createdExercises];
 
-
             const workout = await sendClientWorkout({ client_id, workout_id, exercises: allExercises, workout_day });
+
+            if (workout.message === 'Workout already exists. Try editing it instead.') {
+                res.status(409).json(workout);
+            } else {
+                res.status(200).json(workout);
+            }
+        } else {
+            const workout = await sendClientWorkout({ client_id, workout_id, exercises: existingExercises, workout_day });
 
             if (workout.message === 'Workout already exists. Try editing it instead.') {
                 res.status(409).json(workout);
@@ -168,4 +177,18 @@ const updateClientWorkout = async (req, res) => {
     }
 };
 
-export { addNewClient, getAllClients, getClientData, getClientWeights, setClientWorkout, updateClientWorkout };
+const deleteClientWorkout = async (req, res) => {
+    try {
+        const { client_id, workout_id, workout_day } = req.body;
+        const workout = await deleteClientWorkoutDb({ client_id, workout_id, workout_day });
+        if (workout.message === 'Error') {
+            res.status(409).json(workout);
+        }
+        res.status(200).json(workout);
+    } catch (error) {
+        console.error('Error deleting client workout:', error);
+        res.status(500).json({ error: 'An error occurred while deleting the client workout.' });
+    }
+}
+
+export { addNewClient, getAllClients, getClientData, getClientWeights, setClientWorkout, updateClientWorkout, deleteClientWorkout };

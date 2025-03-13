@@ -265,4 +265,21 @@ const putClientUpdateWorkout = async (workout) => {
     }
 };
 
-export { postNewClient, fetchAllClients, fetchClientData, fetchClientWeights, sendClientWorkout, createNewExercise, putClientUpdateWorkout };
+const deleteClientWorkoutDb = async (workout) => {
+    try {
+        const { client_id, workout_id, workout_day } = workout;
+
+        const deleteExercisesSql = `DELETE FROM workout_exercises_client WHERE client_id = ? AND workout_id = ?`;
+        await promisePool.execute(deleteExercisesSql, [client_id, workout_id]);
+
+        const deleteWorkoutSql = `DELETE FROM clients_workouts WHERE client_id = ? AND workout_id = ? AND day = ?`;
+        await promisePool.execute(deleteWorkoutSql, [client_id, workout_id, workout_day]);
+
+        return { message: 'Workout and associated exercises deleted successfully.' };
+    } catch (error) {
+        console.log(error);
+        return { message: 'Error' };
+    }
+}
+
+export { postNewClient, fetchAllClients, fetchClientData, fetchClientWeights, sendClientWorkout, createNewExercise, putClientUpdateWorkout, deleteClientWorkoutDb };

@@ -1,6 +1,6 @@
 import express  from 'express';
 import {
-    addNewClient,
+    addNewClient, deleteClientWorkout,
     getAllClients,
     getClientData,
     getClientWeights,
@@ -24,5 +24,5 @@ clientRouter.route('/').get(authToken, isCoach, getAllClients);
 clientRouter.route('/add').post(authToken, isCoach, addNewClient);
 clientRouter.route('/:id').get(authToken, isCoach, getClientData);
 clientRouter.route('/weight/:id').get(authToken, isCoach, getClientWeights);
-clientRouter.route('/workout/client/add').post(authToken, isCoach, setClientWorkout).put(authToken, isCoach, updateClientWorkout);
+clientRouter.route('/workout/client').post(authToken, isCoach, setClientWorkout).put(authToken, isCoach, updateClientWorkout).delete(authToken, isCoach, deleteClientWorkout);
 export default clientRouter;

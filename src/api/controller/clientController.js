@@ -4,7 +4,7 @@ import {
     fetchClientData,
     fetchClientWeights,
     sendClientWorkout,
-    createNewExercise
+    createNewExercise, putClientUpdateWorkout
 } from "../model/clientModel.js";
 
 const addNewClient = async (req, res) => {
@@ -119,6 +119,53 @@ const setClientWorkout = async (req, res) => {
     }
 }
 
+const updateClientWorkout = async (req, res) => {
+    try {
+        const { client_id, workout_id, exercises, workout_day } = req.body;
 
 
-export { addNewClient, getAllClients, getClientData, getClientWeights, setClientWorkout };
+        const existingExercises = exercises.filter(exercise => exercise.id);
+        const newExercises = exercises.filter(exercise => !exercise.id);
+
+        let allExercises = [...existingExercises];
+
+        if (newExercises && newExercises.length > 0) {
+            console.log(`Processing ${newExercises.length} new exercises`);
+
+            const createdExercises = await Promise.all(
+                newExercises.map(async (exercise) => {
+                    try {
+                        const result = await createNewExercise(exercise.name);
+                        return {
+                            ...exercise,
+                            id: result.id
+                        };
+                    } catch (error) {
+                        console.log(error)
+                        throw error;
+                    }
+                })
+            );
+
+            allExercises = [...existingExercises, ...createdExercises];
+        }
+
+        const workout = await putClientUpdateWorkout({
+            client_id,
+            workout_id,
+            exercises: allExercises,
+            workout_day
+        });
+
+        if (workout.message === 'Error') {
+            res.status(409).json(workout);
+        } else {
+            res.status(200).json(workout);
+        }
+    } catch (error) {
+        console.error('Error updating client workout:', error);
+        res.status(500).json({ error: 'An error occurred while updating the client workout.' });
+    }
+};
+
+export { addNewClient, getAllClients, getClientData, getClientWeights, setClientWorkout, updateClientWorkout };

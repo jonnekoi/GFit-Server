@@ -51,6 +51,7 @@ const fetchAllWorkouts = async () => {
         });
     });
 
+
     return formattedWorkouts;
 };
 

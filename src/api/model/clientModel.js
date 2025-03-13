@@ -199,7 +199,7 @@ const putClientUpdateWorkout = async (workout) => {
 
 
         const updatePromises = exercises.map(exercise => {
-            const { id, low_reps, max_reps, weight, exercise_description, duration, sets } = exercise;
+            const { id, low_reps, max_reps, weight, descrip, duration, sets } = exercise;
 
             const checkSql = `
                 SELECT 1 FROM workout_exercises_client 
@@ -228,7 +228,7 @@ const putClientUpdateWorkout = async (workout) => {
                             weight === undefined ? null : weight,
                             duration === undefined ? null : duration,
                             max_reps === undefined ? null : max_reps,
-                            exercise_description === undefined ? null : exercise_description,
+                            descrip === undefined ? null : descrip,
                             sets === undefined ? null : sets,
                             client_id,
                             workout_id,
@@ -249,7 +249,7 @@ const putClientUpdateWorkout = async (workout) => {
                             weight === undefined ? null : weight,
                             duration === undefined ? null : duration,
                             max_reps === undefined ? null : max_reps,
-                            exercise_description === undefined ? null : exercise_description,
+                            descrip === undefined ? null : descrip,
                             sets === undefined ? null : sets
                         ];
                         return promisePool.execute(insertSql, insertParams);

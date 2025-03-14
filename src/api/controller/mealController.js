@@ -1,4 +1,4 @@
-import {fetchAllMeals, addMeal, getClientMeals} from "../model/mealModel.js";
+import {fetchAllMeals, addMeal, getClientMeals, fetchAllIngredients, putClientMeal} from "../model/mealModel.js";
 
 
 const getAllMeals = async (req, res) => {
@@ -32,5 +32,23 @@ const fetchClientMealData = async (req, res) => {
     }
 }
 
+const getAllIngredients = async (req, res) => {
+    try {
+        const ingredients = await fetchAllIngredients();
+        res.status(200).json(ingredients);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
 
-export { getAllMeals, addMealForClient, fetchClientMealData };
+const updateClientMeal = async (req, res) => {
+    try {
+        await putClientMeal(req.body);
+        res.status(201).json({ message: "Meal updated successfully" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+
+export { getAllMeals, addMealForClient, fetchClientMealData, getAllIngredients, updateClientMeal };

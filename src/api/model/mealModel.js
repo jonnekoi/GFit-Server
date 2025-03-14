@@ -137,5 +137,46 @@ const addMeal = async (meal, clientId) => {
     }
 };
 
+const fetchAllIngredients = async () => {
+    const query = `
+        SELECT * FROM ingredients;
+    `;
 
-export {fetchAllMeals, addMeal, getClientMeals};
+    try {
+        const [ingredients] = await promisePool.query(query);
+        return ingredients;
+    } catch (error) {
+        console.error("Error fetching ingredients:", error);
+        throw error;
+    }
+}
+
+const putClientMeal = async (meal) => {
+    try {
+        console.log("MODEL MEAL", meal);
+
+        if (!meal.meal_id || !meal.user_id || !meal.ingredients) {
+            throw new Error("Missing required meal data");
+        }
+        await promisePool.query(
+            'DELETE FROM meal_ingredients_client WHERE meal_id = ?',
+            [meal.meal_id]
+        );
+
+        const ingredientPromises = meal.ingredients.map(ingredient => {
+            return promisePool.query(
+                'INSERT INTO meal_ingredients_client (client_id, meal_id, ingredient_id, quantity_g) VALUES (?, ?, ?, ?)',
+                [meal.user_id, meal.meal_id, ingredient.ingredient_id, ingredient.ingredient_quantity_g]
+            );
+        });
+
+        await Promise.all(ingredientPromises);
+
+    } catch (error) {
+        console.error("Error in putClientMeal:", error);
+        throw error;
+    }
+}
+
+
+export {fetchAllMeals, addMeal, getClientMeals, fetchAllIngredients, putClientMeal};

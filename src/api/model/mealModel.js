@@ -159,8 +159,8 @@ const putClientMeal = async (meal) => {
             throw new Error("Missing required meal data");
         }
         await promisePool.query(
-            'DELETE FROM meal_ingredients_client WHERE meal_id = ?',
-            [meal.meal_id]
+            'DELETE FROM meal_ingredients_client WHERE meal_id = ? AND client_id = ?',
+            [meal.meal_id , meal.user_id]
         );
 
         const ingredientPromises = meal.ingredients.map(ingredient => {

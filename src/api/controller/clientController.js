@@ -88,8 +88,7 @@ const setClientWorkout = async (req, res) => {
         const existingExercises = exercises.filter(exercise => exercise.exercise_id);
         const newExercises = exercises.filter(exercise => !exercise.exercise_id);
 
-        console.log("existing", existingExercises);
-        console.log("new", newExercises);
+
 
         if (newExercises.length > 0) {
             const createdExercises = await Promise.all(
@@ -108,15 +107,15 @@ const setClientWorkout = async (req, res) => {
 
             const workout = await sendClientWorkout({ client_id, workout_id, exercises: allExercises, workout_day });
 
-            if (workout.message === 'Workout already exists. Try editing it instead.') {
-                res.status(409).json(workout);
+            if (workout.message === 'Error') {
+                return res.status(409).json(workout);
             } else {
-                res.status(200).json(workout);
+                return res.status(200).json(workout);
             }
         } else {
             const workout = await sendClientWorkout({ client_id, workout_id, exercises: existingExercises, workout_day });
 
-            if (workout.message === 'Workout already exists. Try editing it instead.') {
+            if (workout.message === 'Error') {
                 res.status(409).json(workout);
             } else {
                 res.status(200).json(workout);

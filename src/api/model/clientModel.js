@@ -115,13 +115,12 @@ const sendClientWorkout = async (workout) => {
     try {
         const { client_id, workout_id, exercises, workout_day } = workout;
 
-        console.log(" ollaan täs",workout);
 
-        const checkSql = `SELECT * FROM clients_workouts WHERE client_id = ? AND workout_id = ?`;
-        const [rows] = await promisePool.execute(checkSql, [client_id, workout_id]);
+        const checkSql = `SELECT * FROM clients_workouts WHERE client_id = ? AND workout_id = ? AND day = ?`;
+        const [rows] = await promisePool.execute(checkSql, [client_id, workout_id, workout_day]);
 
         if (rows.length > 0) {
-            return { message: 'Workout already exists. Try editing it instead.' };
+            return { message: 'Error' };
         }
 
         const clientsWorkoutsSql = `INSERT INTO clients_workouts (client_id, workout_id, day) VALUES (?, ?, ?)`;

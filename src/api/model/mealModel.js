@@ -47,4 +47,95 @@ const fetchAllMeals = async () => {
     }
 };
 
-export default fetchAllMeals;
+const getClientMeals = async (clientId) => {
+    const mealQuery = `
+        SELECT 
+            cm.meal_id AS meal_id,
+            m.name AS meal_name,
+            m.category AS meal_category,
+            m.description AS meal_description,
+            COALESCE(SUM((i.protein_per_100g / 100) * mic.quantity_g), 0) AS total_protein,
+            COALESCE(SUM((i.carbs_per_100g / 100) * mic.quantity_g), 0) AS total_carbs,
+            COALESCE(SUM((i.fat_per_100g / 100) * mic.quantity_g), 0) AS total_fat,
+            COALESCE(SUM((i.calories_per_100g / 100) * mic.quantity_g), 0) AS total_calories
+        FROM clients_meals cm
+        JOIN meals m ON cm.meal_id = m.id
+        LEFT JOIN meal_ingredients_client mic ON cm.meal_id = mic.meal_id AND mic.client_id = cm.client_id
+        LEFT JOIN ingredients i ON mic.ingredient_id = i.id
+        WHERE cm.client_id = ?
+        GROUP BY cm.meal_id, m.name;
+    `;
+
+    const ingredientQuery = `
+        SELECT 
+            mic.meal_id,
+            i.id AS ingredient_id,
+            i.name AS ingredient_name,
+            mic.quantity_g AS ingredient_quantity_g,
+            i.protein_per_100g,
+            i.carbs_per_100g,
+            i.fat_per_100g,
+            i.calories_per_100g
+        FROM meal_ingredients_client mic
+        JOIN ingredients i ON mic.ingredient_id = i.id
+        WHERE mic.client_id = ?;
+    `;
+
+    try {
+        const [meals] = await promisePool.execute(mealQuery, [clientId]);
+        const [ingredients] = await promisePool.execute(ingredientQuery, [clientId]);
+
+        const formattedMeals = meals.map(meal => ({
+            ...meal,
+            ingredients: ingredients.filter(ing => ing.meal_id === meal.meal_id)
+        }));
+
+        return formattedMeals;
+    } catch (error) {
+        console.error("Error fetching client meals:", error);
+        throw error;
+    }
+};
+
+
+const addMeal = async (meal, clientId) => {
+    try {
+        const [mealCheck] = await promisePool.query(
+            'SELECT id FROM meals WHERE id = ?',
+            [meal.meal_id]
+        );
+
+        if (mealCheck.length === 0) {
+            throw new Error('Meal not found');
+        }
+
+        await promisePool.query(
+            'INSERT INTO clients_meals (client_id, meal_id) VALUES (?, ?)',
+            [clientId, meal.meal_id]
+        );
+
+        const ingredientPromises = meal.ingredients.map(async (ingredient) => {
+            const [ingredientCheck] = await promisePool.query(
+                'SELECT id FROM ingredients WHERE id = ?',
+                [ingredient.ingredient_id]
+            );
+
+            if (ingredientCheck.length === 0) {
+                throw new Error(`Ingredient with ID ${ingredient.ingredient_id} not found`);
+            }
+
+            return promisePool.query(
+                'INSERT INTO meal_ingredients_client (client_id, meal_id, ingredient_id, quantity_g) VALUES (?, ?, ?, ?)',
+                [clientId, meal.meal_id, ingredient.ingredient_id, ingredient.quantity_g]
+            );
+        });
+
+        await Promise.all(ingredientPromises);
+
+    } catch (error) {
+        throw error;
+    }
+};
+
+
+export {fetchAllMeals, addMeal, getClientMeals};

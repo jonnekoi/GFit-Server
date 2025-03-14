@@ -36,10 +36,10 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   const user = await getUserByUsername(req.body.username);
-  if (!user) return res.status(401).json({ message: "Invalid username" });
+  if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
   if (!bcrypt.compareSync(req.body.password, user.password))
-    return res.status(401).json({ message: "Invalid password" });
+    return res.status(401).json({ message: "Invalid credentials" });
 
   delete user.password;
 

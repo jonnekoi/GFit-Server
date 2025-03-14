@@ -130,7 +130,7 @@ const putUpdateWorkout = async (workout) => {
         return { message: "Workout updated successfully" };
     } catch (error) {
         console.log(error);
-        throw new Error("Failed to update workout");
+        return { error: true, message: "Failed to update workout" };
     }
 }
 

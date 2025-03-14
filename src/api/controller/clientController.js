@@ -107,8 +107,8 @@ const setClientWorkout = async (req, res) => {
 
             const workout = await sendClientWorkout({ client_id, workout_id, exercises: allExercises, workout_day });
 
-            if (workout.message === 'Error') {
-                return res.status(409).json(workout);
+            if (workout.error) {
+                return res.status(409).json({ message: workout.message });
             } else {
                 return res.status(200).json(workout);
             }

@@ -49,13 +49,12 @@ const addNewWorkout = async (req, res) => {
 
 const updateWorkout = async (req, res) => {
     try {
-        console.log("TÄSSÄ UPDATE BODY", req.body);
         const result = await putUpdateWorkout(req.body);
         console.log(result);
-        if (result) {
-            res.status(201).json({message: "Workout Updated!"});
-        } else {
+        if (result.error) {
             res.status(400).json({message: "Failed to update workout"});
+        } else {
+            res.status(201).json({message: "Workout updated successfully"});
         }
     } catch (error) {
         console.log(error);

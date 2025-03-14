@@ -120,7 +120,7 @@ const sendClientWorkout = async (workout) => {
         const [rows] = await promisePool.execute(checkSql, [client_id, workout_id, workout_day]);
 
         if (rows.length > 0) {
-            return { message: 'Error' };
+            return { error: true, message: 'Error' };
         }
 
         const clientsWorkoutsSql = `INSERT INTO clients_workouts (client_id, workout_id, day) VALUES (?, ?, ?)`;

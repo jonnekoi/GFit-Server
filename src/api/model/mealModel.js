@@ -99,6 +99,7 @@ const getClientMeals = async (clientId) => {
 
 
 const addMeal = async (meal, clientId) => {
+
     try {
         const [mealCheck] = await promisePool.query(
             'SELECT id FROM meals WHERE id = ?',
@@ -178,5 +179,76 @@ const putClientMeal = async (meal) => {
     }
 }
 
+const fetchClientTargets = async (clientId) => {
+    const query = `
+        SELECT * FROM client_meal_targets WHERE client_id = ?;
+    `;
 
-export {fetchAllMeals, addMeal, getClientMeals, fetchAllIngredients, putClientMeal};
+    try {
+        const [targets] = await promisePool.query(query, [clientId]);
+        if (targets.length === 0) {
+           return("No targets found for client");
+        }
+
+        return targets;
+    } catch (error) {
+        console.error("Error fetching client targets:", error);
+        throw error;
+    }
+}
+
+const putClientTargets = async (targets, clientId) => {
+    try {
+        const checkQuery = `
+            SELECT COUNT(*) as count
+            FROM client_meal_targets
+            WHERE client_id = ?;
+        `;
+
+        const [results] = await promisePool.query(checkQuery, [clientId]);
+        const recordExists = results[0].count > 0;
+
+        let query;
+        if (recordExists) {
+            query = `
+                UPDATE client_meal_targets
+                SET protein_target = ?,
+                    carbs_target = ?,
+                    fat_target = ?,
+                    calories_target = ?
+                WHERE client_id = ?;
+            `;
+
+            await promisePool.query(query, [
+                targets.protein_target,
+                targets.carbs_target,
+                targets.fat_target,
+                targets.calories_target,
+                clientId
+            ]);
+        } else {
+            query = `
+                INSERT INTO client_meal_targets
+                (client_id, protein_target, carbs_target, fat_target, calories_target)
+                VALUES (?, ?, ?, ?, ?);
+            `;
+
+            await promisePool.query(query, [
+                clientId,
+                targets.protein_target,
+                targets.carbs_target,
+                targets.fat_target,
+                targets.calories_target
+            ]);
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating client targets:", error);
+        throw error;
+    }
+};
+
+
+export {fetchAllMeals, addMeal, getClientMeals, fetchAllIngredients, putClientMeal, fetchClientTargets, putClientTargets};
+

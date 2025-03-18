@@ -66,7 +66,6 @@ const generateRandomCode = (length) => {
 const getClientData = async (req, res) => {
     try {
         const client = await fetchClientData(req.params.id);
-        console.log(client);
         res.status(200).json(client);
     } catch (error) {
         console.log(error);

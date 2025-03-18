@@ -66,6 +66,7 @@ const generateRandomCode = (length) => {
 const getClientData = async (req, res) => {
     try {
         const client = await fetchClientData(req.params.id);
+        console.log(client);
         res.status(200).json(client);
     } catch (error) {
         console.log(error);
@@ -177,6 +178,7 @@ const updateClientWorkout = async (req, res) => {
 };
 
 const deleteClientWorkout = async (req, res) => {
+    console.log(req.body);
     try {
         const { client_id, workout_id, workout_day } = req.body;
         const workout = await deleteClientWorkoutDb({ client_id, workout_id, workout_day });
@@ -189,5 +191,6 @@ const deleteClientWorkout = async (req, res) => {
         res.status(500).json({ error: 'An error occurred while deleting the client workout.' });
     }
 }
+
 
 export { addNewClient, getAllClients, getClientData, getClientWeights, setClientWorkout, updateClientWorkout, deleteClientWorkout };

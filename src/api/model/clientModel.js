@@ -68,10 +68,13 @@ const fetchClientData = async (id) => {
             workouts: {}
         };
 
+        client.workouts = [];
         rows.forEach(row => {
             if (row.workout_id) {
-                if (!client.workouts[row.workout_id]) {
-                    client.workouts[row.workout_id] = {
+                let workout = client.workouts.find(w => w.id === row.workout_id && w.day === row.workout_day);
+
+                if (!workout) {
+                    workout = {
                         id: row.workout_id,
                         name: row.workout_name,
                         description: row.workout_description,
@@ -80,9 +83,11 @@ const fetchClientData = async (id) => {
                         day: row.workout_day,
                         exercises: []
                     };
+                    client.workouts.push(workout);
                 }
+
                 if (row.exercise_id) {
-                    client.workouts[row.workout_id].exercises.push({
+                    workout.exercises.push({
                         id: row.exercise_id,
                         name: row.exercise_name,
                         low_reps: row.low_reps,

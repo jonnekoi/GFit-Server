@@ -128,6 +128,7 @@ const setClientWorkout = async (req, res) => {
 }
 
 const updateClientWorkout = async (req, res) => {
+    console.log(req.body);
     try {
         const { client_id, workout_id, exercises, workout_day } = req.body;
 
@@ -138,7 +139,6 @@ const updateClientWorkout = async (req, res) => {
         let allExercises = [...existingExercises];
 
         if (newExercises && newExercises.length > 0) {
-            console.log(`Processing ${newExercises.length} new exercises`);
 
             const createdExercises = await Promise.all(
                 newExercises.map(async (exercise) => {

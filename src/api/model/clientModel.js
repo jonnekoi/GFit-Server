@@ -186,7 +186,6 @@ const createNewExercise = async (name) => {
 }
 
 const putClientUpdateWorkout = async (workout) => {
-    console.log("workout", workout);
     try {
         const { client_id, workout_id, exercises, workout_day } = workout;
 
@@ -201,67 +200,38 @@ const putClientUpdateWorkout = async (workout) => {
             workout_id
         ]);
 
+        const deleteExercisesSql = `
+            DELETE FROM workout_exercises_client
+            WHERE client_id = ? AND workout_id = ?
+        `;
+        await promisePool.execute(deleteExercisesSql, [client_id, workout_id]);
 
-        const updatePromises = exercises.map(exercise => {
+        const insertPromises = exercises.map(exercise => {
             const { id, low_reps, max_reps, weight, descrip, duration, sets } = exercise;
 
-            const checkSql = `
-                SELECT 1 FROM workout_exercises_client 
-                WHERE client_id = ? AND workout_id = ? AND exercise_id = ?
+            const insertSql = `
+                INSERT INTO workout_exercises_client
+                (client_id, workout_id, exercise_id, low_reps, weight, duration, max_reps, descrip, sets)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
-
-            return promisePool.execute(checkSql, [client_id, workout_id, id])
-                .then(([rows]) => {
-                    if (rows.length > 0) {
-                        const updateSql = `
-                            UPDATE workout_exercises_client
-                            SET
-                                low_reps = ?,
-                                weight = ?,
-                                duration = ?,
-                                max_reps = ?,
-                                descrip = ?,
-                                sets = ?
-                            WHERE
-                                client_id = ? AND
-                                workout_id = ? AND
-                                exercise_id = ?
-                        `;
-                        const updateParams = [
-                            low_reps === undefined ? null : low_reps,
-                            weight === undefined ? null : weight,
-                            duration === undefined ? null : duration,
-                            max_reps === undefined ? null : max_reps,
-                            descrip === undefined ? null : descrip,
-                            sets === undefined ? null : sets,
-                            client_id,
-                            workout_id,
-                            id
-                        ];
-                        return promisePool.execute(updateSql, updateParams);
-                    } else {
-                        const insertSql = `
-                            INSERT INTO workout_exercises_client
-                            (client_id, workout_id, exercise_id, low_reps, weight, duration, max_reps, descrip, sets)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        `;
-                        const insertParams = [
-                            client_id,
-                            workout_id,
-                            id,
-                            low_reps === undefined ? null : low_reps,
-                            weight === undefined ? null : weight,
-                            duration === undefined ? null : duration,
-                            max_reps === undefined ? null : max_reps,
-                            descrip === undefined ? null : descrip,
-                            sets === undefined ? null : sets
-                        ];
-                        return promisePool.execute(insertSql, insertParams);
-                    }
-                });
+            const insertParams = [
+                client_id,
+                workout_id,
+                id,
+                low_reps === undefined ? null : low_reps,
+                weight === undefined ? null : weight,
+                duration === undefined ? null : duration,
+                max_reps === undefined ? null : max_reps,
+                descrip === undefined ? null : descrip,
+                sets === undefined ? null : sets
+            ];
+            return promisePool.execute(insertSql, insertParams);
         });
 
-        await Promise.all(updatePromises);
+        if (insertPromises.length > 0) {
+            await Promise.all(insertPromises);
+        }
+
         return { message: 'Workout updated successfully.' };
     } catch (error) {
         console.log(error);

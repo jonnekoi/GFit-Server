@@ -50,7 +50,6 @@ const addNewWorkout = async (req, res) => {
 const updateWorkout = async (req, res) => {
     try {
         const result = await putUpdateWorkout(req.body);
-        console.log(result);
         if (result.error) {
             res.status(400).json({message: "Failed to update workout"});
         } else {
